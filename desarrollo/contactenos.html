@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilos.css">
+    <title>Contacto</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .contacto {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .contacto-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .contacto-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+        }
+
+        .contacto-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .contacto-form input[type="text"],
+        .contacto-form input[type="email"],
+        .contacto-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .contacto-form textarea {
+            height: 150px;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+    </style>
+</head>
+<body>
+    <ul>
+        <li><a href="gestion_carros.php">gestion</a></li>
+        <li><a href="informacion.html">informacion</a></li>
+        <li><a href="contactenos.html">Contacto</a></li>
+        <li><a href="../inicio_registro/registro.php">REGISTARSE</a></li>
+        <li style="float:right"><a class="active" href="#about">About</a></li>
+    </ul>
+    <div class="contacto">
+        <div class="contacto-header">
+            <h1>Contacto</h1>
+        </div>
+        <div class="contacto-form">
+            <form method="POST" action="enviar_correo.php">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Nombre" required/>
+
+                <label for="correo">Correo electrónico:</label>
+                <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required/>
+
+                <label for="comentario">Comentario:</label>
+                <textarea id="comentario" name="comentario" placeholder="Escribe tu comentario" required></textarea>
+
+                <input type="submit" value="Enviar" class="submit-button"/>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

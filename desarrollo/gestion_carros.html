@@ -1,96 +1,3 @@
-<?php
-
-// Configuración de la conexión a la base de datos
-$dsn = "pgsql:host=localhost;dbname=parqueadero";
-$username = "postgres";
-$password = "12345";
-
-try {
-    // Crear una nueva instancia de PDO
-    $conex = new PDO($dsn, $username, $password);
-
-    // Establecer el modo de error para lanzar excepciones en caso de error
-    $conex->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-} catch (PDOException $e) {
-    // Error al conectar a la base de datos
-    echo "Error al conectar a la base de datos: " . $e->getMessage();
-    exit();
-}
-
-// Función para obtener todos los registros de carros
-function obtenerCarros($conex) {
-    $consulta = "SELECT * FROM carros";
-    $stmt = $conex->query($consulta);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Función para agregar un nuevo carro
-function agregarCarro($conex, $marca, $modelo, $año, $color) {
-    $consulta = "INSERT INTO carros (marca, modelo, año, color) VALUES (?, ?, ?, ?)";
-    $stmt = $conex->prepare($consulta);
-    return $stmt->execute([$marca, $modelo, $año, $color]);
-}
-
-// Función para editar un carro existente
-function editarCarro($conex, $id, $marca, $modelo, $año, $color) {
-    $consulta = "UPDATE carros SET marca = ?, modelo = ?, año = ?, color = ? WHERE id = ?";
-    $stmt = $conex->prepare($consulta);
-    return $stmt->execute([$marca, $modelo, $año, $color, $id]);
-}
-
-// Función para eliminar un carro
-function eliminarCarro($conex, $id) {
-    $consulta = "DELETE FROM carros WHERE id = ?";
-    $stmt = $conex->prepare($consulta);
-    return $stmt->execute([$id]);
-}
-
-// Manejar el envío del formulario para agregar o editar un carro
-if (isset($_POST['submit'])) {
-    $id = $_POST['id'];
-    $marca = $_POST['marca'];
-    $modelo = $_POST['modelo'];
-    $año = $_POST['año'];
-    $color = $_POST['color'];
-
-    if ($id) {
-        // Editar un carro existente
-        editarCarro($conex, $id, $marca, $modelo, $año, $color);
-    } else {
-        // Agregar un nuevo carro
-        agregarCarro($conex, $marca, $modelo, $año, $color);
-    }
-
-    // Redireccionar a la misma página después de agregar/editar un carro
-    header("Location: gestion_carros.php");
-    exit();
-}
-
-// Manejar la eliminación de un carro
-if (isset($_GET['eliminar'])) {
-    $id = $_GET['eliminar'];
-    eliminarCarro($conex, $id);
-
-    // Redireccionar a la misma página después de eliminar un carro
-    header("Location: gestion_carros.php");
-    exit();
-}
-
-// Obtener todos los registros de carros
-$carros = obtenerCarros($conex);
-
-// Obtener el carro para editar si se proporciona el ID de edición
-if (isset($_GET['editar'])) {
-    $idEditar = $_GET['editar'];
-    $consulta = "SELECT * FROM carros WHERE id = ?";
-    $stmt = $conex->prepare($consulta);
-    $stmt->execute([$idEditar]);
-    $carroEditar = $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -111,27 +18,25 @@ if (isset($_GET['editar'])) {
     <h1>Gestión de Carros</h1>
 
     <!-- Formulario para agregar/editar un carro -->
-    <form method="POST" action="gestion_carros.php">
-        <?php if (isset($carroEditar)) : ?>
-            <input type="hidden" name="id" value="<?php echo $carroEditar['id']; ?>">
-        <?php endif; ?>
+    <form id="carroForm">
+        <input type="hidden" id="id" name="id">
         <label for="marca">Marca:</label>
-        <input type="text" name="marca" required value="<?php echo isset($carroEditar) ? $carroEditar['marca'] : ''; ?>">
+        <input type="text" id="marca" required>
         <br>
         <label for="modelo">Modelo:</label>
-        <input type="text" name="modelo" required value="<?php echo isset($carroEditar) ? $carroEditar['modelo'] : ''; ?>">
+        <input type="text" id="modelo" required>
         <br>
         <label for="año">Año:</label>
-        <input type="number" name="año" required value="<?php echo isset($carroEditar) ? $carroEditar['año'] : ''; ?>">
+        <input type="number" id="año" required>
         <br>
         <label for="color">Color:</label>
-        <input type="text" name="color" required value="<?php echo isset($carroEditar) ? $carroEditar['color'] : ''; ?>">
+        <input type="text" id="color" required>
         <br>
-        <input type="submit" name="submit" value="<?php echo isset($carroEditar) ? 'Editar' : 'Guardar'; ?>">
+        <input type="submit" value="Guardar">
     </form>
 
     <!-- Tabla de registros de carros -->
-    <table>
+    <table id="tablaCarros">
         <thead>
             <tr>
                 <th>ID</th>
@@ -142,22 +47,122 @@ if (isset($_GET['editar'])) {
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-            <?php foreach ($carros as $carro) : ?>
-                <tr>
-                    <td><?php echo $carro['id']; ?></td>
-                    <td><?php echo $carro['marca']; ?></td>
-                    <td><?php echo $carro['modelo']; ?></td>
-                    <td><?php echo $carro['año']; ?></td>
-                    <td><?php echo $carro['color']; ?></td>
-                    <td>
-                        <a href="gestion_carros.php?editar=<?php echo $carro['id']; ?>">Editar</a>
-                        <a href="gestion_carros.php?eliminar=<?php echo $carro['id']; ?>">Eliminar</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
+        <tbody></tbody>
     </table>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Variable para almacenar los carros
+        var carros = [];
+
+        // Función para generar un ID único
+        function generarID() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Función para obtener todos los registros de carros
+        function obtenerCarros() {
+            return carros;
+        }
+
+        // Función para agregar un nuevo carro
+        function agregarCarro(carro) {
+            carro.id = generarID();
+            carros.push(carro);
+        }
+
+        // Función para editar un carro existente
+        function editarCarro(carro) {
+            var index = carros.findIndex(function (c) {
+                return c.id === carro.id;
+            });
+
+            if (index !== -1) {
+                carros[index] = carro;
+            }
+        }
+
+        // Función para eliminar un carro
+        function eliminarCarro(id) {
+            var index = carros.findIndex(function (c) {
+                return c.id === id;
+            });
+
+            if (index !== -1) {
+                carros.splice(index, 1);
+            }
+        }
+
+        // Función para mostrar los carros en la tabla
+        function mostrarCarros() {
+            var tbody = $('#tablaCarros tbody');
+            tbody.empty();
+
+            carros.forEach(function (carro) {
+                var row = $('<tr>');
+                row.append($('<td>').text(carro.id));
+                row.append($('<td>').text(carro.marca));
+                row.append($('<td>').text(carro.modelo));
+                row.append($('<td>').text(carro.año));
+                row.append($('<td>').text(carro.color));
+                var acciones = $('<td>');
+                acciones.append($('<button>').text('Editar').click(function () {
+                    editarFormulario(carro);
+                }));
+                acciones.append($('<button>').text('Eliminar').click(function () {
+                    eliminarCarro(carro.id);
+                    mostrarCarros();
+                }));
+                row.append(acciones);
+
+                tbody.append(row);
+            });
+        }
+
+        // Función para limpiar el formulario
+        function limpiarFormulario() {
+            $('#id').val('');
+            $('#marca').val('');
+            $('#modelo').val('');
+            $('#año').val('');
+            $('#color').val('');
+        }
+
+        // Función para cargar los datos del carro en el formulario para editar
+        function editarFormulario(carro) {
+            $('#id').val(carro.id);
+            $('#marca').val(carro.marca);
+            $('#modelo').val(carro.modelo);
+            $('#año').val(carro.año);
+            $('#color').val(carro.color);
+        }
+
+        // Manejar el envío del formulario
+        $('#carroForm').submit(function (event) {
+            event.preventDefault();
+
+            var id = $('#id').val();
+            var marca = $('#marca').val();
+            var modelo = $('#modelo').val();
+            var año = $('#año').val();
+            var color = $('#color').val();
+
+            var carro = { id: id, marca: marca, modelo: modelo, año: año, color: color };
+
+            if (id) {
+                // Editar un carro existente
+                editarCarro(carro);
+            } else {
+                // Agregar un nuevo carro
+                agregarCarro(carro);
+            }
+
+            mostrarCarros();
+            limpiarFormulario();
+        });
+
+        // Obtener todos los registros de carros al cargar la página
+        mostrarCarros();
+    </script>
 </body>
 </html>

@@ -66,49 +66,22 @@
             font-size: 16px;
             cursor: pointer;
         }
-        ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333;
-}
 
-li {
-    float: left;
-}
-
-li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-li a:hover:not(.active) {
-    background-color: #111;
-}
-
-.active {
-    background-color: #4CAF50;
-}
+        .mensaje-exito {
+            display: none;
+            text-align: center;
+            color: green;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <ul>
-        <li><a href="gestion_carros.php">gestion</a></li>
-        <li><a href="informacion.html">informacion</a></li>
-        <li><a href="contactenos.html">Contacto</a></li>
-        <li><a href="../inicio_registro/registro.php">REGISTARSE</a></li>
-        <li style="float:right"><a class="active" href="#about">About</a></li>
-    </ul>
     <div class="contacto">
         <div class="contacto-header">
             <h1>Contacto</h1>
         </div>
         <div class="contacto-form">
-            <form method="POST" action="enviar_correo.php">
+            <form id="formulario">
                 <label for="nombre">Nombre:</label>
                 <input type="text" id="nombre" name="nombre" placeholder="Nombre" required/>
 
@@ -120,8 +93,37 @@ li a:hover:not(.active) {
 
                 <input type="submit" value="Enviar" class="submit-button"/>
             </form>
+            <div class="mensaje-exito" id="mensaje-exito">Tu comentario se ha enviado exitosamente. Gracias por tu mensaje.</div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('formulario').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var nombre = document.getElementById('nombre').value;
+            var correo = document.getElementById('correo').value;
+            var comentario = document.getElementById('comentario').value;
+
+            // Objeto de datos a enviar
+            var datos = {
+                nombre: nombre,
+                correo: correo,
+                comentario: comentario
+            };
+
+            // Simulación de envío exitoso
+            setTimeout(function() {
+                // Mostrar mensaje de éxito
+                document.getElementById('mensaje-exito').style.display = 'block';
+                // Limpiar el formulario
+                document.getElementById('formulario').reset();
+                // Ocultar el mensaje después de 3 segundos
+                setTimeout(function() {
+                    document.getElementById('mensaje-exito').style.display = 'none';
+                }, 3000);
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
-
